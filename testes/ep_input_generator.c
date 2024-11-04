@@ -60,10 +60,11 @@ int main(int argc, char **argv) {
     srand(semente);
 
     double tamanho_k = 100.0 * num_regs / 1024;
-    double tamanho_g = tamanho_k / 1024;
+    double tamanho_m = tamanho_k / 1024;
+    double tamanho_g = tamanho_m / 1024;
 
     printf("Arquivo: %s\n", filename);
-    printf("Tamanho: %d bytes (%.2f KB, %.2f GB)\n", num_regs * 100, tamanho_k, tamanho_g);
+    printf("Tamanho: %d bytes (%.2f KB, %.2f MB, %.2f GB)\n", num_regs * 100, tamanho_k, tamanho_m, tamanho_g);
     printf("Tipo: %s\n", tipos[tipo]);
     printf("Semente: %d\n", semente);
     printf("\n");
