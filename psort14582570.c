@@ -5,7 +5,7 @@
 
 typedef struct {
     int ch;
-    unsigned char dados[96];
+    unsigned char* dados;
 } NO;
 
 typedef struct {
@@ -29,16 +29,13 @@ void inicializar_lista(FILE* entrada, LISTA* l) {
     l->tam = 0;
 
     int chave;
-    unsigned char dados[96];
-    int contador = 0;
+    unsigned char* dados;
     while (fread(&chave, 4, 1, entrada) > 0) {
-        fread(&dados, 1, 96, entrada);
-        l->nos[contador].ch = chave;
-        int i;
-        for (i = 0; i < 96; i++) {
-            l->nos[contador].dados[i] = dados[i];
-        }
-        contador++;
+        dados = (unsigned char*) malloc(sizeof(unsigned char)*96);
+        fread(dados, 1, 96, entrada);
+        l->nos[l->tam].ch = chave;
+        l->nos[l->tam].dados = dados;
+        l->tam++;
     }
 }
 
