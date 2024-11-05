@@ -15,7 +15,15 @@ typedef struct {
 
 
 void swap(int i, int j, LISTA* l) {
+    NO aux;
+    aux.ch = l->nos[i].ch;
+    aux.dados = l->nos[i].dados;
 
+    l->nos[i].ch = l->nos[j].ch;
+    l->nos[i].dados = l->nos[j].dados;
+
+    l->nos[j].ch = aux.ch;
+    l->nos[j].dados = aux.dados;
 }
 
 
@@ -27,7 +35,6 @@ void ordena(int* chaves, FILE* arq) {
 void inicializar_lista(FILE* entrada, LISTA* l) {
     l = (LISTA*) malloc(sizeof(LISTA));
     l->tam = 0;
-
     int chave;
     unsigned char* dados;
     while (fread(&chave, 4, 1, entrada) > 0) {
@@ -47,7 +54,7 @@ void inicializar_lista(FILE* entrada, LISTA* l) {
 
 int main(int argc, char *argv[]) {
     /* if (argc != 4) {
-        fprintf(stderr, "Erro na passagem de parâmetros. Execute no formato: ./psort<nusp> <entrada> <saída> <threads>");
+        fprintf(stderr, "Erro na passagem de parâmetros. Execute no formato: ./psort1458 <entrada> <saída> <threads>");
         return -1;
     }
     FILE* entrada = fopen(argv[1], "r");
