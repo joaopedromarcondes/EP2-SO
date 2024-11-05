@@ -1,12 +1,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_SIZE 1000
+
+typedef struct {
+    int ch;
+    unsigned char dados[96];
+} NO;
+
+typedef struct {
+    NO nos[MAX_SIZE];
+    int tam;
+} LISTA;
+
+
+void swap(int i, int j, LISTA* l) {
+
+}
+
+
 void ordena(int* chaves, FILE* arq) {
 
 }
 
 
+void inicializar_lista(FILE* entrada, LISTA* l) {
+    l = (LISTA*) malloc(sizeof(LISTA));
+    l->tam = 0;
 
+    int chave;
+    unsigned char dados[96];
+    int contador = 0;
+    while (fread(&chave, 4, 1, entrada) > 0) {
+        fread(&dados, 1, 96, entrada);
+        l->nos[contador].ch = chave;
+        int i;
+        for (i = 0; i < 96; i++) {
+            l->nos[contador].dados[i] = dados[i];
+        }
+        contador++;
+    }
+}
 
 
 
@@ -29,16 +63,9 @@ int main(int argc, char *argv[]) {
 
 
     FILE * entrada = fopen("testes/10_registros_ja_ordenados.dat", "r");
-    int a;
-    fread(&a, 4, 1, entrada);
-    printf("%d\n", a);
-    unsigned char b[96];
-    fread(&b, 1, 96, entrada);
-    //printf("%d\n", b);
-    int c;
-    fread(&c, 4, 1, entrada);
-    printf("%d\n", c);
 
+    LISTA* l;
+    inicializar_lista(entrada, l);
 
     if (fclose(entrada))
         perror("fclose error");
