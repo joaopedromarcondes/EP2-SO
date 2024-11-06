@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_SIZE 1000
+#define MAX_SIZE 100
 
 typedef struct {
     int ch;
@@ -26,16 +26,76 @@ void swap(int i, int j, LISTA* l) {
     l->nos[j].dados = aux.dados;
 }
 
+// particiona e retorna o índice do pivô
+int particiona(LISTA* l, int inicio, int fim)
+{
+	int pivo, pivo_indice, i;
+	
+	pivo = l->nos[fim].ch; // o pivô é sempre o último elemento
+	pivo_indice = inicio;
+	
+	for(i = inicio; i < fim; i++)
+	{
+		// verifica se o elemento é <= ao pivô
+		if(l->nos[i].ch <= pivo)
+		{
+			// realiza a troca
+			swap(i, pivo_indice, l);
+			// incrementa o pivo_indice
+			pivo_indice++;
+		}
+	}
+	
+	// troca o pivô
+	swap(pivo_indice, fim, l);
+	
+	// retorna o índice do pivô
+	return pivo_indice;
+}
 
-void ordena(int* chaves, FILE* arq) {
+// escolhe um pivô aleatório para evitar o pior caso do quicksort
+int particiona_random(LISTA* l, int inicio, int fim)
+{
+	// seleciona um número entre fim (inclusive) e inicio (inclusive)
+	int pivo_indice = (rand() % (fim - inicio + 1)) + inicio;
+	
+	// faz a troca para colocar o pivô no fim
+	swap(pivo_indice, fim, l);
+	// chama a particiona
+	return particiona(l, inicio, fim);
+}
 
+void quick_sort(LISTA* l, int inicio, int fim)
+{
+	if(inicio < fim)
+	{
+		// função particionar retorna o índice do pivô
+		int pivo_indice = particiona_random(l, inicio, fim);
+		
+		// chamadas recursivas quick_sort
+		quick_sort(l, inicio, pivo_indice - 1);
+		quick_sort(l, pivo_indice + 1, fim);
+	}
+}
+
+
+
+
+void ordena(LISTA* l) {
+    quick_sort(l, 0, l->tam-1);
+}
+
+void mostra(LISTA* l) {
+    int i;
+    for (i = 0; i < l->tam; i++) {
+        printf("%d\n", l->nos[i].ch);
+    }
 }
 
 
 void inicializar_lista(FILE* entrada, LISTA* l) {
-    l = (LISTA*) malloc(sizeof(LISTA));
-    l->tam = 0;
     int chave;
+    l->tam = 0;
     unsigned char* dados;
     while (fread(&chave, 4, 1, entrada) > 0) {
         dados = (unsigned char*) malloc(sizeof(unsigned char)*96);
@@ -66,10 +126,15 @@ int main(int argc, char *argv[]) {
     printf("\n"); */
 
 
-    FILE * entrada = fopen("testes/10_registros_ja_ordenados.dat", "r");
+    FILE * entrada = fopen("testes/10_registros_ordem_reversa.dat", "r");
 
-    LISTA* l;
+    LISTA* l = (LISTA*) malloc(sizeof(LISTA));;
     inicializar_lista(entrada, l);
+    
+    mostra(l);
+    ordena(l);
+    mostra(l);
+
 
     if (fclose(entrada))
         perror("fclose error");
