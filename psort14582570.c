@@ -13,6 +13,16 @@ typedef struct {
     int tam;
 } LISTA;
 
+void swap(int i, int j, LISTA* l);
+void mostra(LISTA* l);
+void ordena(LISTA* l);
+void quick_sort(LISTA* l, int inicio, int fim);
+int particiona_random(LISTA* l, int inicio, int fim);
+int particiona(LISTA* l, int inicio, int fim);
+void mergeSort(LISTA* l, int left, int right);
+void merge(LISTA* l, int left, int middle, int right);
+
+
 
 void swap(int i, int j, LISTA* l) {
     NO aux;
@@ -25,6 +35,69 @@ void swap(int i, int j, LISTA* l) {
     l->nos[j].ch = aux.ch;
     l->nos[j].dados = aux.dados;
 }
+
+void mergeSort(LISTA* l, int left, int right) {   
+        
+        if (left >= right)
+            return;
+        
+        else {
+            
+            int middle = (left + right) / 2;
+            mergeSort(l, left, middle);
+            mergeSort(l, middle + 1, right);
+    
+            merge(l, left, middle, right);
+        }
+        
+    }
+
+void merge(LISTA* l, int left, int middle, int right) {
+        
+        // transfere os elementos entre left e right para um array auxiliar.
+        LISTA* helper = (LISTA*) malloc(sizeof(LISTA));
+        int i;
+        for (i = left; i <= right; i++) {
+            helper->nos[i] = l->nos[i];
+        }
+        helper->tam = l->tam;
+        
+        
+        i = left;
+        int j = middle + 1;
+        int k = left;
+        
+        while (i <= middle && j <= right) {
+            
+            if (helper->nos[i].ch <= helper->nos[j].ch) {
+                l->nos[k] = helper->nos[i];
+                i++;
+            } else {
+                l->nos[k] = helper->nos[j];
+                j++;
+            }
+            k++;    
+            
+        }
+        
+        // se a metade inicial não foi toda consumida, faz o append.
+        while (i <= middle) {
+            l->nos[k] = helper->nos[i];
+            i++;
+            k++;
+        }
+       
+        // Não precisamos nos preocupar se a metade final foi 
+        // toda consumida, já que, se esse foi o caso, ela já está
+        // no array final.
+
+    }
+
+
+
+
+
+
 
 // particiona e retorna o índice do pivô
 int particiona(LISTA* l, int inicio, int fim)
@@ -82,7 +155,21 @@ void quick_sort(LISTA* l, int inicio, int fim)
 
 
 void ordena(LISTA* l) {
-    quick_sort(l, 0, l->tam-1);
+    // Com essa variável é possível escolher qual operação fazer
+    int i = 0;
+
+    switch (i) {
+    case 0:
+        quick_sort(l, 0, l->tam-1);
+        break;
+    case 1:
+        mergeSort(l, 0, l->tam-1);
+        break;
+
+    default:
+        break;
+    }
+ 
 }
 
 void mostra(LISTA* l) {
