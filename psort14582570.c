@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #define MAX_SIZE 100
 
@@ -13,18 +14,26 @@ typedef struct {
     int tam;
 } LISTA;
 
+typedef struct {
+    LISTA* l;
+    int ini;
+    int fim;
+} PAR;
+
 void swap(int i, int j, LISTA* l);
 void mostra(LISTA* l);
-void ordena(LISTA* l);
+void ordena(LISTA* l, int n);
 void quick_sort(LISTA* l, int inicio, int fim);
 int particiona_random(LISTA* l, int inicio, int fim);
 int particiona(LISTA* l, int inicio, int fim);
 void mergeSort(LISTA* l, int left, int right);
 void merge(LISTA* l, int left, int middle, int right);
+void* func_aux(void* arg);
 
 
 
 void swap(int i, int j, LISTA* l) {
+    printf("swap: %d %d\n", i, j);
     NO aux;
     aux.ch = l->nos[i].ch;
     aux.dados = l->nos[i].dados;
@@ -138,32 +147,78 @@ int particiona_random(LISTA* l, int inicio, int fim)
 	return particiona(l, inicio, fim);
 }
 
-void quick_sort(LISTA* l, int inicio, int fim)
-{
+void quick_sort(LISTA* l, int inicio, int fim) {
+
 	if(inicio < fim)
 	{
 		// função particionar retorna o índice do pivô
 		int pivo_indice = particiona_random(l, inicio, fim);
+        printf("pivo: %d\n", pivo_indice);
 		
 		// chamadas recursivas quick_sort
 		quick_sort(l, inicio, pivo_indice - 1);
+        printf("Funcionou o primeiro\n");
 		quick_sort(l, pivo_indice + 1, fim);
+        printf("Funcionou o segundo\n");
 	}
+}
+
+void* func_aux(void* arg) {
+    PAR* par = (PAR*) arg;
+    printf("%d %d\n", par->ini, par->fim);
+    quick_sort(par->l, par->ini, par->fim);
+    printf("Funcionou!");
+    pthread_exit(NULL);
 }
 
 
 
-
-void ordena(LISTA* l) {
+// n é o número de threads
+void ordena(LISTA* l, int n) {
     // Com essa variável é possível escolher qual operação fazer
-    int i = 0;
+    int escolha = 2;
+    pthread_t* threads = (pthread_t *) malloc(sizeof(pthread_t)*n);
 
-    switch (i) {
+    switch (escolha) {
     case 0:
-        quick_sort(l, 0, l->tam-1);
+        quick_sort(l, 0, 5);
         break;
     case 1:
         mergeSort(l, 0, l->tam-1);
+        break;
+    case 2:
+        PAR* par = (PAR*) malloc(sizeof(PAR));
+        par->l = l;
+        par->ini = 0;
+        par->fim = 5;
+        pthread_create(&threads[0], NULL, func_aux, (void*)(par));
+        /* PAR* par2 = (PAR*) malloc(sizeof(PAR));
+        par2->ini = 6;
+        par2->fim = 9;
+        pthread_create(&threads[1], NULL, func_aux, (void*)(par2)); */
+        pthread_join(threads[0], NULL);
+        //pthread_join(threads[1], thread_res);
+        //merge(l, 0, 2, 5);
+        //merge(l, 0, 6, 9);
+    
+        /* PAR* par = (PAR*) malloc(sizeof(PAR));
+        par->l = l;
+        int tam = l->tam/n;
+        int i;
+        for (i = 0; i < n; i++) {
+            par->ini = i*tam;
+            par->fim = (i+1)*tam;
+            pthread_create(&threads[i], NULL, func_aux, (void*)(par));
+        }
+        void* thread_res;
+        for (i = 0; i < n; i++) {
+            pthread_join(threads[i], thread_res);
+        }
+        for (i = 0; i < n-1; i++) {
+            int meio = (i*tam +(i+1*tam))/2;
+            merge(l, i*tam, meio, (i+1)*tam);
+        } */
+        
         break;
 
     default:
@@ -219,7 +274,7 @@ int main(int argc, char *argv[]) {
     inicializar_lista(entrada, l);
     
     mostra(l);
-    ordena(l);
+    ordena(l, 4);
     mostra(l);
 
 
