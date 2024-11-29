@@ -190,7 +190,7 @@ void ordena(LISTA* l, int n) {
         mergeSort(l, 0, l->tam-1);
         break;
     case 2:
-        PAR* par = (PAR*) malloc(sizeof(PAR));
+        /* PAR* par = (PAR*) malloc(sizeof(PAR));
         par->l = l;
         par->ini = 0;
         par->fim = 5;
@@ -202,28 +202,41 @@ void ordena(LISTA* l, int n) {
         pthread_create(&threads[1], NULL, func_aux, (void*)(par2)); 
         pthread_join(threads[0], NULL);
         printf("Acabou thread 1\n");
-        pthread_join(threads[1], NULL);
-        //merge(l, 0, 2, 5);
-        //merge(l, 0, 6, 9);
+        pthread_join(threads[1], NULL); */
+        //merge(l, 0, 1, 3);
+        //merge(l, 0, 3, 6);
     
-        /* PAR* par = (PAR*) malloc(sizeof(PAR));
-        par->l = l;
+        PAR* par;
         int tam = l->tam/n;
         int i;
         for (i = 0; i < n; i++) {
+            PAR* par = (PAR*) malloc(sizeof(PAR));
+            par->l = l;
             par->ini = i*tam;
             par->fim = (i+1)*tam;
+            if (i != 0) {
+                par->ini++;
+            } 
+            if (n-1 == i) {
+                par->fim = l->tam-1;
+            }
+
             pthread_create(&threads[i], NULL, func_aux, (void*)(par));
         }
         void* thread_res;
         for (i = 0; i < n; i++) {
             pthread_join(threads[i], thread_res);
-        }
+        } 
         for (i = 0; i < n-1; i++) {
-            int meio = (i*tam +(i+1*tam))/2;
-            merge(l, i*tam, meio, (i+1)*tam);
-        } */
-        
+            int meio = ((i+1)*tam);
+            int fim = (i+2)*tam;
+            if (n-2 == i) 
+                fim = l->tam-1;
+            printf("%d %d\n", meio, fim);
+            merge(l, 0, meio, fim);
+        } 
+        //merge(l, 0, 3, 6);
+        //merge(l, 0, 6, 9);
         break;
 
     default:
@@ -273,13 +286,13 @@ int main(int argc, char *argv[]) {
     printf("\n"); */
 
 
-    FILE * entrada = fopen("testes/10_registros_ordem_reversa.dat", "r");
+    FILE * entrada = fopen("testes/20_saida.dat", "r");
 
     LISTA* l = (LISTA*) malloc(sizeof(LISTA));;
     inicializar_lista(entrada, l);
     
     mostra(l);
-    ordena(l, 4);
+    ordena(l, 7);
     mostra(l);
 
 
