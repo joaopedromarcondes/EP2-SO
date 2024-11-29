@@ -33,6 +33,8 @@ void* func_aux(void* arg);
 
 
 void swap(int i, int j, LISTA* l) {
+    if (i == j)
+        return;
     printf("swap: %d %d\n", i, j);
     NO aux;
     aux.ch = l->nos[i].ch;
@@ -43,6 +45,7 @@ void swap(int i, int j, LISTA* l) {
 
     l->nos[j].ch = aux.ch;
     l->nos[j].dados = aux.dados;
+    printf("Acabou swap!\n");
 }
 
 void mergeSort(LISTA* l, int left, int right) {   
@@ -167,8 +170,8 @@ void* func_aux(void* arg) {
     PAR* par = (PAR*) arg;
     printf("%d %d\n", par->ini, par->fim);
     quick_sort(par->l, par->ini, par->fim);
-    printf("Funcionou!");
-    pthread_exit(NULL);
+    printf("Funcionou!\n");
+    return NULL;
 }
 
 
@@ -181,7 +184,7 @@ void ordena(LISTA* l, int n) {
 
     switch (escolha) {
     case 0:
-        quick_sort(l, 0, 5);
+        quick_sort(l, 6, 9);
         break;
     case 1:
         mergeSort(l, 0, l->tam-1);
@@ -192,12 +195,14 @@ void ordena(LISTA* l, int n) {
         par->ini = 0;
         par->fim = 5;
         pthread_create(&threads[0], NULL, func_aux, (void*)(par));
-        /* PAR* par2 = (PAR*) malloc(sizeof(PAR));
+        PAR* par2 = (PAR*) malloc(sizeof(PAR));
+        par2->l = l;
         par2->ini = 6;
         par2->fim = 9;
-        pthread_create(&threads[1], NULL, func_aux, (void*)(par2)); */
+        pthread_create(&threads[1], NULL, func_aux, (void*)(par2)); 
         pthread_join(threads[0], NULL);
-        //pthread_join(threads[1], thread_res);
+        printf("Acabou thread 1\n");
+        pthread_join(threads[1], NULL);
         //merge(l, 0, 2, 5);
         //merge(l, 0, 6, 9);
     
