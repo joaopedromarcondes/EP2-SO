@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define MAX_SIZE 100
+#define MAX_SIZE 10000000
 
 typedef struct {
     int ch;
@@ -35,7 +35,7 @@ void* func_aux(void* arg);
 void swap(int i, int j, LISTA* l) {
     if (i == j)
         return;
-    printf("swap: %d %d\n", i, j);
+    //printf("swap: %d %d\n", i, j);
     NO aux;
     aux.ch = l->nos[i].ch;
     aux.dados = l->nos[i].dados;
@@ -45,7 +45,7 @@ void swap(int i, int j, LISTA* l) {
 
     l->nos[j].ch = aux.ch;
     l->nos[j].dados = aux.dados;
-    printf("Acabou swap!\n");
+    //printf("Acabou swap!\n");
 }
 
 void mergeSort(LISTA* l, int left, int right) {   
@@ -156,21 +156,21 @@ void quick_sort(LISTA* l, int inicio, int fim) {
 	{
 		// função particionar retorna o índice do pivô
 		int pivo_indice = particiona_random(l, inicio, fim);
-        printf("pivo: %d\n", pivo_indice);
+        //printf("pivo: %d\n", pivo_indice);
 		
 		// chamadas recursivas quick_sort
 		quick_sort(l, inicio, pivo_indice - 1);
-        printf("Funcionou o primeiro\n");
+        //printf("Funcionou o primeiro\n");
 		quick_sort(l, pivo_indice + 1, fim);
-        printf("Funcionou o segundo\n");
+        //printf("Funcionou o segundo\n");
 	}
 }
 
 void* func_aux(void* arg) {
     PAR* par = (PAR*) arg;
-    printf("%d %d\n", par->ini, par->fim);
+    //printf("%d %d\n", par->ini, par->fim);
     quick_sort(par->l, par->ini, par->fim);
-    printf("Funcionou!\n");
+    //printf("Funcionou!\n");
     return NULL;
 }
 
@@ -179,33 +179,17 @@ void* func_aux(void* arg) {
 // n é o número de threads
 void ordena(LISTA* l, int n) {
     // Com essa variável é possível escolher qual operação fazer
-    int escolha = 2;
+    int escolha = 0;
     pthread_t* threads = (pthread_t *) malloc(sizeof(pthread_t)*n);
 
     switch (escolha) {
     case 0:
-        quick_sort(l, 6, 9);
+        quick_sort(l, 0, l->tam-1);
         break;
     case 1:
         mergeSort(l, 0, l->tam-1);
         break;
-    case 2:
-        /* PAR* par = (PAR*) malloc(sizeof(PAR));
-        par->l = l;
-        par->ini = 0;
-        par->fim = 5;
-        pthread_create(&threads[0], NULL, func_aux, (void*)(par));
-        PAR* par2 = (PAR*) malloc(sizeof(PAR));
-        par2->l = l;
-        par2->ini = 6;
-        par2->fim = 9;
-        pthread_create(&threads[1], NULL, func_aux, (void*)(par2)); 
-        pthread_join(threads[0], NULL);
-        printf("Acabou thread 1\n");
-        pthread_join(threads[1], NULL); */
-        //merge(l, 0, 1, 3);
-        //merge(l, 0, 3, 6);
-    
+    case 2:  
         PAR* par;
         int tam = l->tam/n;
         int i;
@@ -232,11 +216,8 @@ void ordena(LISTA* l, int n) {
             int fim = (i+2)*tam;
             if (n-2 == i) 
                 fim = l->tam-1;
-            printf("%d %d\n", meio, fim);
             merge(l, 0, meio, fim);
         } 
-        //merge(l, 0, 3, 6);
-        //merge(l, 0, 6, 9);
         break;
 
     default:
@@ -286,14 +267,14 @@ int main(int argc, char *argv[]) {
     printf("\n"); */
 
 
-    FILE * entrada = fopen("testes/20_saida.dat", "r");
+    FILE * entrada = fopen("testes/5000000_aleat.dat", "r");
 
     LISTA* l = (LISTA*) malloc(sizeof(LISTA));;
     inicializar_lista(entrada, l);
     
-    mostra(l);
-    ordena(l, 7);
-    mostra(l);
+    //mostra(l);
+    ordena(l, 20);
+    //mostra(l);
 
 
     if (fclose(entrada))
