@@ -3,7 +3,6 @@
 #include <pthread.h>
 #include <sys/mman.h>
 #include <string.h>
-//#include <sys/time.h>
 
 #define MAX_SIZE 10000000
 
@@ -38,7 +37,6 @@ void* func_aux(void* arg);
 void swap(int i, int j, LISTA* l) {
     if (i == j)
         return;
-    //printf("swap: %d %d\n", i, j);
     NO aux;
     aux.ch = l->nos[i].ch;
     aux.dados = l->nos[i].dados;
@@ -48,7 +46,6 @@ void swap(int i, int j, LISTA* l) {
 
     l->nos[j].ch = aux.ch;
     l->nos[j].dados = aux.dados;
-    //printf("Acabou swap!\n");
 }
 
 void mergeSort(LISTA* l, int left, int right) {   
@@ -69,7 +66,6 @@ void mergeSort(LISTA* l, int left, int right) {
 
 void merge(LISTA* l, int left, int middle, int right) {
         
-        // transfere os elementos entre left e right para um array auxiliar.
         LISTA* helper = (LISTA*) malloc(sizeof(LISTA));
         int i;
         for (i = left; i <= right; i++) {
@@ -95,16 +91,11 @@ void merge(LISTA* l, int left, int middle, int right) {
             
         }
         
-        // se a metade inicial não foi toda consumida, faz o append.
         while (i <= middle) {
             l->nos[k] = helper->nos[i];
             i++;
             k++;
         }
-       
-        // Não precisamos nos preocupar se a metade final foi 
-        // toda consumida, já que, se esse foi o caso, ela já está
-        // no array final.
 
     }
 
@@ -159,21 +150,16 @@ void quick_sort(LISTA* l, int inicio, int fim) {
 	{
 		// função particionar retorna o índice do pivô
 		int pivo_indice = particiona_random(l, inicio, fim);
-        //printf("pivo: %d\n", pivo_indice);
 		
 		// chamadas recursivas quick_sort
 		quick_sort(l, inicio, pivo_indice - 1);
-        //printf("Funcionou o primeiro\n");
 		quick_sort(l, pivo_indice + 1, fim);
-        //printf("Funcionou o segundo\n");
 	}
 }
 
 void* func_aux(void* arg) {
     PAR* par = (PAR*) arg;
-    //printf("%d %d\n", par->ini, par->fim);
     quick_sort(par->l, par->ini, par->fim);
-    //printf("Funcionou!\n");
     return NULL;
 }
 
