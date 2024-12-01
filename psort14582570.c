@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/mman.h>
+#include <string.h>
+//#include <sys/time.h>
 
 #define MAX_SIZE 10000000
 
@@ -179,7 +182,8 @@ void* func_aux(void* arg) {
 // n é o número de threads
 void ordena(LISTA* l, int n) {
     // Com essa variável é possível escolher qual operação fazer
-    int escolha = 0;
+
+    int escolha = 2;
     pthread_t* threads = (pthread_t *) malloc(sizeof(pthread_t)*n);
 
     switch (escolha) {
@@ -207,9 +211,9 @@ void ordena(LISTA* l, int n) {
 
             pthread_create(&threads[i], NULL, func_aux, (void*)(par));
         }
-        void* thread_res;
+
         for (i = 0; i < n; i++) {
-            pthread_join(threads[i], thread_res);
+            pthread_join(threads[i], NULL);
         } 
         for (i = 0; i < n-1; i++) {
             int meio = ((i+1)*tam);
@@ -237,14 +241,49 @@ void mostra(LISTA* l) {
 void inicializar_lista(FILE* entrada, LISTA* l) {
     int chave;
     l->tam = 0;
-    unsigned char* dados;
-    while (fread(&chave, 4, 1, entrada) > 0) {
-        dados = (unsigned char*) malloc(sizeof(unsigned char)*96);
-        fread(dados, 1, 96, entrada);
-        l->nos[l->tam].ch = chave;
-        l->nos[l->tam].dados = dados;
+
+    // Obtendo o tamanho do arquivo
+    fseek(entrada, 0, SEEK_END);
+    long size = ftell(entrada);
+    fseek(entrada, 0, SEEK_SET);
+
+    // Mapeando o arquivo para a memória
+    int fd = fileno(entrada);
+    unsigned char* map = (unsigned char*) mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (map == MAP_FAILED) {
+        perror("Erro ao mapear o arquivo");
+        return;
+    }
+
+    // Calculando o número total de nós que podem ser lidos
+    size_t num_nos = size / (4 + 96); // 4 bytes para chave + 96 bytes para os dados
+
+    // Alocando memória para todos os dados de uma vez
+    unsigned char* dados = (unsigned char*) malloc(96 * num_nos * sizeof(unsigned char));
+    if (dados == NULL) {
+        perror("Erro ao alocar memória para dados");
+        munmap(map, size);
+        return;
+    }
+
+    // Processando os dados mapeados
+    unsigned char* ptr = map;
+    for (size_t i = 0; i < num_nos; ++i) {
+        chave = *(int*)ptr;
+        ptr += 4;  // Avança 4 bytes para o próximo inteiro (chave)
+        
+        // Copiando os dados diretamente para a memória já alocada
+        memcpy(dados + i * 96, ptr, 96);
+        ptr += 96;  // Avança 96 bytes para os próximos dados
+
+        l->nos[i].ch = chave;
+        l->nos[i].dados = dados + i * 96;  // Aponta para o local correto
         l->tam++;
     }
+
+    // Desmapeando o arquivo após a leitura
+    munmap(map, size);
+
 }
 
 
@@ -254,11 +293,12 @@ void inicializar_lista(FILE* entrada, LISTA* l) {
 
 
 int main(int argc, char *argv[]) {
-    /* if (argc != 4) {
+    if (argc != 4) {
         fprintf(stderr, "Erro na passagem de parâmetros. Execute no formato: ./psort1458 <entrada> <saída> <threads>");
         return -1;
     }
-    FILE* entrada = fopen(argv[1], "r");
+    
+    /* FILE* entrada = fopen(argv[1], "r");
     FILE* saida = fopen(argv[2], "w");
     int* num;
     while (fscanf(entrada, "%d", num) > 0) {
@@ -271,11 +311,24 @@ int main(int argc, char *argv[]) {
 
     LISTA* l = (LISTA*) malloc(sizeof(LISTA));;
     inicializar_lista(entrada, l);
-    
-    //mostra(l);
-    ordena(l, 20);
-    //mostra(l);
 
+    //struct timeval start, end;
+    //long seconds, micros;
+    //gettimeofday(&start, NULL);
+    //mostra(l);
+    long n =  atoi(argv[3]);
+    ordena(l, n);
+    //mostra(l);
+    //gettimeofday(&end, NULL);
+
+    // Calcula o tempo gasto
+    //seconds = end.tv_sec - start.tv_sec;
+    //micros = (end.tv_usec - start.tv_usec);
+
+    // Converte para segundos e microsegundos
+    //double elapsed = seconds + micros*1e-6;
+
+    //printf("Tempo gasto: %.6f segundos\n", elapsed);
 
     if (fclose(entrada))
         perror("fclose error");
