@@ -6,6 +6,13 @@
 
 #define MAX_SIZE 10000000
 
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+int numero_threads_atuais;
+int n;
+
 typedef struct {
     int ch;
     unsigned char* dados;
@@ -31,6 +38,7 @@ int particiona(LISTA* l, int inicio, int fim);
 void mergeSort(LISTA* l, int left, int right);
 void merge(LISTA* l, int left, int middle, int right);
 void* func_aux(void* arg);
+void* func_aux_2(void* arg);
 
 
 
@@ -144,6 +152,74 @@ int particiona_random(LISTA* l, int inicio, int fim)
 	return particiona(l, inicio, fim);
 }
 
+void quick_sort_t(LISTA* l, int inicio, int fim) {
+
+	if(inicio < fim)
+	{
+		// função particionar retorna o índice do pivô
+		int pivo_indice = particiona_random(l, inicio, fim);
+		
+		// chamadas recursivas quick_sort
+
+        PAR* p = (PAR*) malloc(sizeof(PAR));
+        p->l = l;
+        p->ini = inicio;
+        p->fim = pivo_indice - 1;
+        pthread_t thr;
+        int criou_t1 = 0;
+
+        pthread_mutex_lock(&mutex);
+        if (numero_threads_atuais < n) {
+            pthread_create(&thr, NULL, func_aux_2, (void*)p);
+            numero_threads_atuais++;
+            criou_t1 = 1;
+        } else {
+            pthread_mutex_unlock(&mutex);
+            func_aux_2((void*)p);
+            free(p);
+        }
+		pthread_mutex_unlock(&mutex);
+        
+
+        PAR* p2 = (PAR*) malloc(sizeof(PAR));
+        p2->l = l;
+        p2->ini = pivo_indice + 1;
+        p2->fim = fim;
+        pthread_t thr2;
+        int criou_t2 = 0;
+
+		pthread_mutex_lock(&mutex);
+        if (numero_threads_atuais < n) {
+            pthread_create(&thr2, NULL, func_aux_2, (void*)p2);
+            numero_threads_atuais++;
+            criou_t2 = 1;
+        } else {
+            pthread_mutex_unlock(&mutex);
+            func_aux_2((void*)p2);
+            free(p2);
+        }
+		pthread_mutex_unlock(&mutex);
+        
+
+        if (criou_t1) {
+            pthread_join(thr, NULL);
+            free(p);
+            pthread_mutex_lock(&mutex);
+            numero_threads_atuais--;
+            pthread_mutex_unlock(&mutex);
+        }
+
+        if (criou_t2) {
+            pthread_join(thr2, NULL);
+            free(p2);
+            pthread_mutex_lock(&mutex);
+            numero_threads_atuais--;
+            pthread_mutex_unlock(&mutex);
+        }
+	}
+}
+
+
 void quick_sort(LISTA* l, int inicio, int fim) {
 
 	if(inicio < fim)
@@ -157,12 +233,22 @@ void quick_sort(LISTA* l, int inicio, int fim) {
 	}
 }
 
+
+
+
+
+
+
 void* func_aux(void* arg) {
     PAR* par = (PAR*) arg;
     quick_sort(par->l, par->ini, par->fim);
     return NULL;
 }
-
+void* func_aux_2(void* arg) {
+    PAR* par = (PAR*) arg;
+    quick_sort_t(par->l, par->ini, par->fim);
+    return NULL;
+}
 
 
 // n é o número de threads
@@ -184,7 +270,7 @@ void ordena(LISTA* l, int n) {
         int tam = l->tam/n;
         int i;
         for (i = 0; i < n; i++) {
-            PAR* par = (PAR*) malloc(sizeof(PAR));
+            par = (PAR*) malloc(sizeof(PAR));
             par->l = l;
             par->ini = i*tam;
             par->fim = (i+1)*tam;
@@ -209,6 +295,10 @@ void ordena(LISTA* l, int n) {
             merge(l, 0, meio, fim);
         } 
         break;
+    
+    case 3:
+        numero_threads_atuais = 0;
+        quick_sort_t(l, 0, l->tam);
 
     default:
         break;
@@ -273,6 +363,14 @@ void inicializar_lista(FILE* entrada, LISTA* l) {
 }
 
 
+void mostra_saida(FILE* saida, LISTA* l) {
+    int i;
+    for (i = 0; i < l->tam; i++) {
+        fwrite(&l->nos[i], 100, 1, saida);
+    }
+}
+
+
 
 
 
@@ -284,25 +382,21 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     
-    /* FILE* entrada = fopen(argv[1], "r");
-    FILE* saida = fopen(argv[2], "w");
-    int* num;
-    while (fscanf(entrada, "%d", num) > 0) {
-        printf("Olá, %d!\n", *num);
-    }
-    printf("\n"); */
+    FILE* entrada = fopen(argv[1], "r");
+    FILE* saida = fopen(argv[2], "wb");
+    
 
-
-    FILE * entrada = fopen("testes/5000000_aleat.dat", "r");
-
-    LISTA* l = (LISTA*) malloc(sizeof(LISTA));;
+    LISTA* l = (LISTA*) malloc(sizeof(LISTA));
     inicializar_lista(entrada, l);
+    
+
+   
 
     //struct timeval start, end;
     //long seconds, micros;
     //gettimeofday(&start, NULL);
     //mostra(l);
-    long n =  atoi(argv[3]);
+    n =  atoi(argv[3]);
     ordena(l, n);
     //mostra(l);
     //gettimeofday(&end, NULL);
@@ -315,6 +409,8 @@ int main(int argc, char *argv[]) {
     //double elapsed = seconds + micros*1e-6;
 
     //printf("Tempo gasto: %.6f segundos\n", elapsed);
+
+    mostra_saida(saida, l);
 
     if (fclose(entrada))
         perror("fclose error");
