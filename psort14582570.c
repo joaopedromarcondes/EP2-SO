@@ -362,14 +362,22 @@ void inicializar_lista(FILE* entrada, LISTA* l) {
 
 }
 
-
 void mostra_saida(FILE* saida, LISTA* l) {
-    int i;
+    int i, j;
+    size_t tamanho_registro = 4 + 96;  // 4 bytes para a chave + 96 bytes para os dados
+    unsigned char buffer[tamanho_registro];  // Buffer para armazenar cada registro
+
     for (i = 0; i < l->tam; i++) {
-        fwrite(&l->nos[i], 100, 1, saida);
+        // Copiar a chave para o buffer
+        memcpy(buffer, &l->nos[i].ch, 4);
+
+        // Copiar os dados para o buffer (96 bytes)
+        memcpy(buffer + 4, l->nos[i].dados, 96);
+
+        // Escrever o buffer inteiro de uma vez
+        fwrite(buffer, 1, tamanho_registro, saida);
     }
 }
-
 
 
 
@@ -383,13 +391,13 @@ int main(int argc, char *argv[]) {
     }
     
     FILE* entrada = fopen(argv[1], "r");
-    FILE* saida = fopen(argv[2], "wb");
+    FILE* saida = fopen(argv[2], "r+");
     
 
     LISTA* l = (LISTA*) malloc(sizeof(LISTA));
     inicializar_lista(entrada, l);
     
-
+    
    
 
     //struct timeval start, end;
@@ -398,6 +406,7 @@ int main(int argc, char *argv[]) {
     //mostra(l);
     n =  atoi(argv[3]);
     ordena(l, n);
+
     //mostra(l);
     //gettimeofday(&end, NULL);
 
@@ -414,6 +423,7 @@ int main(int argc, char *argv[]) {
 
     if (fclose(entrada))
         perror("fclose error");
+
 
     return 0;
 }

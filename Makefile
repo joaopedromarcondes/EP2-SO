@@ -1,6 +1,6 @@
 run:
 	gcc psort14582570.c -pthread
-	./a.out testes/10_registros_ja_ordenados.dat saida.txt 4
+	./a.out testes/10_registros_aletorios.dat saida.txt 1
 	rm a.out
 
 comp:
